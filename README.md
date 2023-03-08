@@ -8,6 +8,6 @@
 
 ## How to run front end
 
-`cd react`
+`cd front-end`
 
 `npm start`
