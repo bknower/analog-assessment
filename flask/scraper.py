@@ -1,23 +1,43 @@
 import requests
 from bs4 import BeautifulSoup
 
-# user = "c9s"
-# TODO: get multiple pages at once by checking number of repos on first page
 def get_repositories(user):
-
     page_number = 1
-
     results = []
     while True:
         url = f"https://github.com/{user}?page={page_number}&tab=repositories"
         page = requests.get(url)
+        if page.status_code != 200:
+            raise Exception("User does not exist")
+        print(page.status_code)
 
         soup = BeautifulSoup(page.content, "html.parser")
-        result = soup.find_all(itemprop="name codeRepository")
-        if len(result) == 0:
+
+
+        # the outer html around each repo the user owns
+        repos = soup.find_all(itemprop="owns")
+
+        # if none were found then we've gotten all pages
+        if len(repos) == 0:
             break
-        results.extend(result)
+
+        for repo in repos:
+            name = repo.find(itemprop="name codeRepository").text.strip()
+            link = f"https://github.com/{user}/{name}"
+            description = repo.find(itemprop="description")
+            pl = repo.find(itemprop="programmingLanguage")
+            description = description and description.text or ""
+            pl = pl and pl.text or ""
+            result = {
+                "name": name,
+                "link": link,
+                "description": description,
+                "pl": pl
+            }
+            result = {k : v.strip() for (k, v) in result.items()}
+
+            results.append(result)
         page_number += 1
     
 
-    return [r.text.lstrip() for r in results]
+    return results
