@@ -22,7 +22,12 @@ function App() {
   const fetchUserData = (user) => {
     fetch(`http://localhost:5000/user/${user}`)
       .then((response) => response.json())
-      .then((data) => setUserData(data))
+      .then((data) => {
+        Object.entries(data).forEach(([username, repos]) => {
+          setUserData(repos);
+          setSelectedUser(username);
+        });
+      })
       .then(fetchUsers);
   };
 
@@ -41,6 +46,11 @@ function App() {
       fetchUserData(selectedUser);
     }
   }, [selectedUser]);
+
+  const handleSubmit = () => {
+    fetchUserData(searchedUser);
+    setSearchedUser("");
+  };
 
   return (
     <Grid container ml={5} mt={2} direction="column" spacing={5}>
@@ -78,15 +88,11 @@ function App() {
               label="Username"
               value={searchedUser}
               onChange={(e) => setSearchedUser(e.target.value)}
-              onSubmit={() => fetchUserData(searchedUser)}
+              onSubmit={handleSubmit}
             />
           </Grid>
           <Grid item alignItems="stretch" style={{ display: "flex" }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => fetchUserData(searchedUser)}
-            >
+            <Button variant="contained" size="large" onClick={handleSubmit}>
               Search
             </Button>
           </Grid>

@@ -14,9 +14,6 @@ import { FormControl, Grid, InputLabel, Link } from "@mui/material";
 import TextField from "@mui/material/TextField";
 
 export const Repos = React.memo(({ userData }) => {
-  useEffect(() => {
-    console.log("rerender repos");
-  });
   return (
     <Grid item>
       <Grid container spacing={2}>
