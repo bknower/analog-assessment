@@ -12,10 +12,6 @@ CORS(app)
 @app.route('/user/<username>')
 def profile(username):
     (connection, cursor) = get_db_connection()
-    # user = cursor.execute(f"SELECT * FROM users WHERE name={username}").fetchone()
-    # if user:
-    #     return user
-    # else:
     repos = []
     try:
         stored_repos = connection.execute(f"""
@@ -30,7 +26,6 @@ def profile(username):
             cursor.execute("INSERT INTO users (username) VALUES (?) RETURNING id", (username,))
             row = cursor.fetchone()
             (user_id, ) = row if row else None
-            print(user_id)
             for repo in repos:
                 cursor.execute("INSERT INTO repos (user_id, name, link, description, pl) VALUES (?, ?, ?, ?, ?)", 
                             (user_id, repo["name"], repo["link"], repo["description"], repo["pl"]))
@@ -60,7 +55,6 @@ def profile(username):
 def get_users():
     (connection, cursor) = get_db_connection()
     users = cursor.execute("SELECT username FROM users").fetchall()
-    print(users)
     return [user["username"] for user in users]
 
 

@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup
 def get_repositories(user):
     page_number = 1
     results = []
+
+    # repeat until we run out of pages of responses
     while True:
         url = f"https://github.com/{user}?page={page_number}&tab=repositories"
         page = requests.get(url)
         if page.status_code != 200:
             raise Exception("User does not exist")
-        print(page.status_code)
 
         soup = BeautifulSoup(page.content, "html.parser")
 
@@ -26,8 +27,10 @@ def get_repositories(user):
             link = f"https://github.com/{user}/{name}"
             description = repo.find(itemprop="description")
             pl = repo.find(itemprop="programmingLanguage")
+
             description = description and description.text or ""
             pl = pl and pl.text or ""
+            
             result = {
                 "name": name,
                 "link": link,

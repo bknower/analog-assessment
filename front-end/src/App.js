@@ -1,11 +1,6 @@
 import logo from "./logo.svg";
 import "./App.css";
 import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
-import CardMedia from "@mui/material/CardMedia";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useState } from "react";
@@ -53,7 +48,14 @@ function App() {
   };
 
   return (
-    <Grid container ml={5} mt={2} direction="column" spacing={5}>
+    <Grid
+      container
+      ml={5}
+      mt={2}
+      direction="column"
+      spacing={5}
+      style={{ maxWidth: "90%" }}
+    >
       <Grid item alignItems="stretch">
         <Typography key="1" variant="h6">
           Select an existing user:
@@ -69,7 +71,6 @@ function App() {
               setSelectedUser(e.target.value);
             }}
           >
-            {/* <MenuItem value=""></MenuItem> */}
             {users.map((user) => (
               <MenuItem key={user} value={user}>
                 {user}
