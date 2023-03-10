@@ -21,6 +21,9 @@ def profile(username):
         WHERE u.username = '{username}'
         ORDER BY r.created
         """).fetchall()
+
+        # if we don't already have the data for this user stored, scrape it
+        # from github and save it to the database
         if len(stored_repos) == 0:
             repos = get_repositories(username)
             cursor.execute("INSERT INTO users (username) VALUES (?) RETURNING id", (username,))
@@ -31,8 +34,9 @@ def profile(username):
                             (user_id, repo["name"], repo["link"], repo["description"], repo["pl"]))
             connection.commit()
             return {username: repos}
+        
+        # otherwise, return the saved data in the appropriate format
         else:
-    
             users = {}
 
             for k, g in groupby(stored_repos, key=lambda user: user['username']):
