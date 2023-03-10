@@ -4,6 +4,10 @@
 
 `pip install -r requirements.txt `
 
+`cd front-end`
+
+`npm install`
+
 ## How to run back end
 
 `cd flask`
@@ -20,6 +24,8 @@ Running [here](https://localhost:5000)
 
 ## How to run front end
 
-`npm start --prefix front-end`
+`cd front-end`
+
+`npm start`
 
 Running [here](https://localhost:3000)
