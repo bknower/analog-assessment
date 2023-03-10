@@ -10,7 +10,7 @@
 
 ## How to run back end
 
-`cd flask`
+`cd back-end`
 
 `flask run`
 
