@@ -46,7 +46,7 @@ function App() {
           .then(fetchUsers);
       } else {
         response.text().then((text) => {
-          setErrorMessage("Error fetching user data: " + text);
+          setErrorMessage("Error fetching user data: user does not exist.");
           setErrorModalOpen(true);
           setUserData([]);
         });
@@ -85,11 +85,10 @@ function App() {
   }, [userData]);
 
   useEffect(() => {
+    setUserData([]);
+    setLastLookedUp(null);
     if (selectedUser !== "") {
       fetchUserData(selectedUser);
-    } else {
-      setUserData([]);
-      setLastLookedUp(null);
     }
   }, [selectedUser]);
 
