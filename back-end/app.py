@@ -8,16 +8,15 @@ from sqlite3 import Error
 app = Flask(__name__)
 CORS(app)
 
+
 def scrape_user(username):
     (connection, cursor) = get_db_connection()
+    
     try:
         repos = get_repositories(username)
     except Exception as e:
         return str(e), 400
     
-
-
-
     cursor.execute("INSERT INTO users (username) VALUES (?) RETURNING id, created", (username,))
     row = cursor.fetchone()
     (user_id, created, ) = row if row else None
@@ -32,7 +31,7 @@ def scrape_user(username):
         }
 
 @app.route('/user/<username>')
-def profile(username):
+def get_user(username):
     (connection, cursor) = get_db_connection()
     repos = []
     stored_repos = []
@@ -44,13 +43,16 @@ def profile(username):
         WHERE u.username = '{username}'
         ORDER BY r.created
         """).fetchall()
+        cursor.execute("SELECT * FROM users WHERE username=?", (username, ))
+        rows = cursor.fetchall()
+        # if we don't already have the data for this user stored, scrape it
+        # from github and save it to the database
+        if len(rows) == 0:
+            return scrape_user(username)
     except:
         return "user does not exist", 404
+    
 
-    # if we don't already have the data for this user stored, scrape it
-    # from github and save it to the database
-    if len(stored_repos) == 0:
-        return scrape_user(username)
 
     
     # otherwise, return the saved data in the appropriate format
@@ -95,6 +97,7 @@ def refresh(username):
     print(user_id)
     cursor.execute("DELETE FROM repos WHERE user_id=?", (user_id, ))
     connection.commit()
+    connection.close()
     scrape_user(username)
     return jsonify(success=True)
     # except Exception as e:

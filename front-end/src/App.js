@@ -5,7 +5,14 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
-import { FormControl, Grid, InputLabel, Link } from "@mui/material";
+import {
+  Autocomplete,
+  CircularProgress,
+  FormControl,
+  Grid,
+  InputLabel,
+  Link,
+} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -21,8 +28,11 @@ function App() {
   const [lastLookedUp, setLastLookedUp] = useState();
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const fetchUserData = (user) => {
+    setUserData();
+    setLoading(true);
     fetch(`http://localhost:5000/user/${user}`).then((response) => {
       if (response.ok) {
         response
@@ -38,6 +48,7 @@ function App() {
         response.text().then((text) => {
           setErrorMessage("Error fetching user data: " + text);
           setErrorModalOpen(true);
+          setUserData([]);
         });
       }
     });
@@ -51,12 +62,15 @@ function App() {
         response.text().then((text) => {
           setErrorMessage("Error fetching user data: " + text);
           setErrorModalOpen(true);
+          setUserData([]);
         });
       }
     });
   };
 
   const refreshUser = (user) => {
+    setUserData();
+    setLoading(true);
     fetch(`http://localhost:5000/refresh/${user}`).then((response) =>
       response.json().then(() => fetchUserData(user))
     );
@@ -67,19 +81,21 @@ function App() {
   }, []);
 
   useEffect(() => {
+    setLoading(false);
+  }, [userData]);
+
+  useEffect(() => {
     if (selectedUser !== "") {
       fetchUserData(selectedUser);
+    } else {
+      setUserData([]);
+      setLastLookedUp(null);
     }
   }, [selectedUser]);
 
   const handleSubmit = () => {
-    if (searchedUser == "") {
-      setErrorMessage("Please enter the username of a GitHub user.");
-      setErrorModalOpen(true);
-    } else {
-      fetchUserData(searchedUser);
-      setSearchedUser("");
-    }
+    fetchUserData(searchedUser);
+    setSearchedUser("");
   };
 
   return (
@@ -93,43 +109,51 @@ function App() {
         container
         ml={5}
         mt={2}
+        mb={2}
         direction="column"
         spacing={5}
         style={{ maxWidth: "90%" }}
       >
         <Grid item alignItems="stretch">
           <Typography key="1" variant="h6">
-            Select an existing user:
+            Select an existing user or search for a new user:
           </Typography>
 
           <br />
           <Grid container>
             <Grid item alignItems="stretch" style={{ display: "flex" }}>
               <FormControl>
-                <InputLabel>Select User</InputLabel>
-                <Select
-                  value={selectedUser}
-                  style={{ minWidth: 150 }}
-                  displayEmpty
-                  onChange={(e) => {
-                    setSelectedUser(e.target.value);
+                <Autocomplete
+                  disablePortal
+                  options={users}
+                  sx={{ minWidth: 150 }}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select User" />
+                  )}
+                  freeSolo
+                  onChange={(e, value, reason) => {
+                    setSelectedUser(value || "");
                   }}
-                >
-                  {users.map((user) => (
-                    <MenuItem key={user} value={user}>
-                      {user}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  onInputChange={(e, value) => setSearchedUser(value)}
+                  value={selectedUser || null}
+                />
               </FormControl>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => fetchUserData(searchedUser)}
+              >
+                Search
+              </Button>
             </Grid>
+          </Grid>
+          <Grid container>
             {lastLookedUp && (
               <>
                 <Grid
                   item
                   alignItems="stretch"
                   style={{ display: "flex" }}
-                  ml={3}
                   mt={1}
                 >
                   <Typography key="2" variant="h6">
@@ -152,29 +176,9 @@ function App() {
               </>
             )}
           </Grid>
-
-          <Typography key="3" variant="h6" mt={2}>
-            Search for new users:
-          </Typography>
-          <br />
-          <Grid container>
-            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-              <TextField
-                type="search"
-                label="Username"
-                value={searchedUser}
-                onChange={(e) => setSearchedUser(e.target.value)}
-                onSubmit={handleSubmit}
-              />
-            </Grid>
-            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-              <Button variant="contained" size="large" onClick={handleSubmit}>
-                Search
-              </Button>
-            </Grid>
-          </Grid>
         </Grid>
-        <Repos userData={userData} />
+
+        <Repos userData={userData} loading={loading} />
       </Grid>
     </>
   );

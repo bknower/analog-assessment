@@ -10,34 +10,42 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useState } from "react";
 import Typography from "@mui/material/Typography";
-import { FormControl, Grid, InputLabel, Link } from "@mui/material";
+import {
+  CircularProgress,
+  FormControl,
+  Grid,
+  InputLabel,
+  Link,
+} from "@mui/material";
 import TextField from "@mui/material/TextField";
 
-export const Repos = React.memo(({ userData }) => {
+export const Repos = React.memo(({ userData, loading }) => {
   return (
     <Grid item>
+      {!userData && <CircularProgress style={{ marginLeft: "5" }} />}
       <Grid container spacing={2}>
-        {userData.map((repo, index) => (
-          <Grid item key={index}>
-            <Card style={{ maxWidth: 300 }}>
-              <CardContent>
-                <Typography variant="h6">
-                  <a href={repo.link}>{repo.name}</a>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {repo.description}
-                </Typography>
-
-                {repo.pl && (
-                  <Typography variant="body2">
-                    Built in <b>{repo.pl}</b>
+        {userData &&
+          userData.map((repo, index) => (
+            <Grid item key={index}>
+              <Card style={{ maxWidth: 300 }}>
+                <CardContent>
+                  <Typography variant="h6">
+                    <a href={repo.link}>{repo.name}</a>
                   </Typography>
-                )}
-              </CardContent>
-              <CardActions disableSpacing></CardActions>
-            </Card>
-          </Grid>
-        ))}
+                  <Typography variant="body2" color="text.secondary">
+                    {repo.description}
+                  </Typography>
+
+                  {repo.pl && (
+                    <Typography variant="body2">
+                      Built in <b>{repo.pl}</b>
+                    </Typography>
+                  )}
+                </CardContent>
+                <CardActions disableSpacing></CardActions>
+              </Card>
+            </Grid>
+          ))}
       </Grid>
     </Grid>
   );
