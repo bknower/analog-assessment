@@ -9,6 +9,7 @@ def get_repositories(user):
     while True:
         url = f"https://github.com/{user}?page={page_number}&tab=repositories"
         page = requests.get(url)
+        print(page.status_code)
         if page.status_code != 200:
             raise Exception("User does not exist")
 
@@ -17,6 +18,11 @@ def get_repositories(user):
 
         # the outer html around each repo the user owns
         repos = soup.find_all(itemprop="owns")
+        org = soup.find_all(id="org-members")
+        org_people = soup.find_all(class_="member-avatar")
+
+        if len(org) != 0 or len(org_people) != 0:
+            raise Exception(f"{user} is an organization, not a user.")
 
         # if none were found then we've gotten all pages
         if len(repos) == 0:

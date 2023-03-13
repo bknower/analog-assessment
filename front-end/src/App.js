@@ -11,12 +11,14 @@ import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import { Repos } from "./Repos";
 import { ErrorModal } from "./ErrorModal";
-
+import RefreshIcon from "@mui/icons-material/Refresh";
+import moment from "moment";
 function App() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
   const [searchedUser, setSearchedUser] = useState("");
   const [userData, setUserData] = useState([]);
+  const [lastLookedUp, setLastLookedUp] = useState();
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -26,10 +28,10 @@ function App() {
         response
           .json()
           .then((data) => {
-            Object.entries(data).forEach(([username, repos]) => {
-              setUserData(repos);
-              setSelectedUser(username);
-            });
+            const { username, created, repos } = data;
+            setLastLookedUp(created);
+            setUserData(repos);
+            setSelectedUser(username);
           })
           .then(fetchUsers);
       } else {
@@ -52,6 +54,12 @@ function App() {
         });
       }
     });
+  };
+
+  const refreshUser = (user) => {
+    fetch(`http://localhost:5000/refresh/${user}`).then((response) =>
+      response.json().then(() => fetchUserData(user))
+    );
   };
 
   useEffect(() => {
@@ -93,25 +101,59 @@ function App() {
           <Typography key="1" variant="h6">
             Select an existing user:
           </Typography>
+
           <br />
-          <FormControl>
-            <InputLabel>Select User</InputLabel>
-            <Select
-              value={selectedUser}
-              style={{ minWidth: 150 }}
-              displayEmpty
-              onChange={(e) => {
-                setSelectedUser(e.target.value);
-              }}
-            >
-              {users.map((user) => (
-                <MenuItem key={user} value={user}>
-                  {user}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Typography key="2" variant="h6" mt={2}>
+          <Grid container>
+            <Grid item alignItems="stretch" style={{ display: "flex" }}>
+              <FormControl>
+                <InputLabel>Select User</InputLabel>
+                <Select
+                  value={selectedUser}
+                  style={{ minWidth: 150 }}
+                  displayEmpty
+                  onChange={(e) => {
+                    setSelectedUser(e.target.value);
+                  }}
+                >
+                  {users.map((user) => (
+                    <MenuItem key={user} value={user}>
+                      {user}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            {lastLookedUp && (
+              <>
+                <Grid
+                  item
+                  alignItems="stretch"
+                  style={{ display: "flex" }}
+                  ml={3}
+                  mt={1}
+                >
+                  <Typography key="2" variant="h6">
+                    Last updated{" "}
+                    {moment
+                      .utc(lastLookedUp)
+                      .local()
+                      .format("MMMM Do YYYY, h:mm:ss a")}
+                  </Typography>
+                </Grid>
+                <Grid item ml={3} mt={1}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<RefreshIcon />}
+                    onClick={() => refreshUser(selectedUser)}
+                  >
+                    Refresh
+                  </Button>
+                </Grid>
+              </>
+            )}
+          </Grid>
+
+          <Typography key="3" variant="h6" mt={2}>
             Search for new users:
           </Typography>
           <br />
